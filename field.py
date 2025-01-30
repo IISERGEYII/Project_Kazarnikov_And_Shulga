@@ -1,17 +1,17 @@
 from PyQt6.QtWidgets import QWidget, QPushButton, QGridLayout, QProgressBar, QHBoxLayout, QLCDNumber, \
-    QDialog, QVBoxLayout
+    QDialog, QVBoxLayout, QApplication
 from PyQt6.QtCore import Qt, QTimer, QSize
 from PyQt6.QtGui import QPixmap, QIcon
 from board import *
+import sys
 
 
 class The_playing_field(QWidget):
 
-    def __init__(self, mainWidget, params):
+    def __init__(self):
         super().__init__()
-        self.main_widget = mainWidget
-        self.params = params
-        self.board = Board(params)
+        self.init_param = {"rows": 10, "cols": 10, "mode_coeff": 1.5, "HP": 60}
+        self.board = Board(self.init_param)
         self.nodes = {}
         self.timers = {}
         self.icons = {}
@@ -68,7 +68,7 @@ class The_playing_field(QWidget):
         self.lcd_number.setFixedSize(1000, 50)
         self.end_timer = QTimer(self)
         self.end_timer.timeout.connect(self.timeout_end)
-        self.end_time = int(60 * (2 - self.params.get("mode_coeff")))
+        self.end_time = int(60 * (2 - self.init_param.get("mode_coeff")))
         self.lcd_number.display(self.end_time)
         timerGroup.addWidget(self.lcd_number)
         self.mainGroup.addLayout(timerGroup)
@@ -335,3 +335,10 @@ class The_playing_field(QWidget):
         self.lcd_number.display(self.end_time)
         if self.end_time == 0:
             self.end_game()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = The_playing_field()
+    ex.show()
+    sys.exit(app.exec())

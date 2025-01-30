@@ -13,6 +13,61 @@ class Node:
         self.main = False
         self.__initAV(mode_coeff, HP)
 
+    def __initAV(self, mode_coeff, HP):
+        random.seed()
+        avType = random.randrange(1, 5)
+        if avType == 1:
+            self.av = AV_Kaspersky(mode_coeff, HP)
+        elif avType == 2:
+            self.av = AV_Bitdefender(mode_coeff, HP)
+        elif avType == 3:
+            self.av = AV_Norton(mode_coeff, HP)
+        elif avType == 4:
+            self.av = AV_Mcafee(mode_coeff, HP)
+
+    def getAV(self):
+        return self.av
+
+    def getTypeAV(self):
+        return self.av.type
+
+    def isHacked(self):
+        return self.hacked
+
+    def isEncrypted(self):
+        return self.encrypted
+
+    def isBlocked(self):
+        return bool(len(self.isBlockedByList))
+
+    def isAccess(self):
+        return self.access
+
+    def isMain(self):
+        return self.main
+
+    def setBlock(self, blockFlag, av):
+        if blockFlag is True:
+            self.isBlockedByList.append(av)
+        else:
+            self.isBlockedByList.remove(av)
+
+    def setAccess(self):
+        self.access = True
+
+    def setMain(self):
+        self.main = True
+
+    def setHacked(self):
+        self.hacked = True
+        self.av.hp = 0
+
+    def setEncrypted(self):
+        self.encrypted = True
+
+    def avActive(self):
+        return self.av.isActive()
+
 
 class Board:
     def __init__(self, params):
