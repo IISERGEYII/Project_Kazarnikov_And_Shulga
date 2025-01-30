@@ -2,6 +2,8 @@ import pygame
 import os
 import random
 
+PROGRESS_HACK = pygame.USEREVENT + 1
+PROGRESS_ENCRYPT = pygame.USEREVENT + 1
 
 class Node:
 
@@ -178,7 +180,7 @@ class The_playing_field:
     def __init__(self, width, height, params):
         self.width = width
         self.height = height
-        self.phase_nodes = [[1] * width for _ in range(height)]
+        self.board = Board(params)
         self.left = 10
         self.top = 10
         self.cell_size = 100
@@ -191,9 +193,9 @@ class The_playing_field:
 
     def render(self, screen):
         square = pygame.Rect(10, 10, self.cell_size, self.cell_size)
-        hacker_bar = pygame.Rect(10, 10, 20, 50)
-        encrypted_bar = pygame.Rect(90, 10, 20, 50)
-        hp_bar = pygame.Rect(15, 100, 90, 10)
+        hacker_bar = pygame.Rect(12, 12, 20, 50)
+        encrypted_bar = pygame.Rect(88, 12, 20, 50)
+        hp_bar = pygame.Rect(15, 98, 90, 10)
         for i in range(self.height):
             for j in range(self.width):
 
@@ -202,44 +204,39 @@ class The_playing_field:
                 pygame.draw.rect(screen, "green", encrypted_bar.move(j * self.cell_size, i * self.cell_size),
                                  width=1)
                 pygame.draw.rect(screen, "red", hp_bar.move(j * self.cell_size, i * self.cell_size))
-                if self.phase_nodes[i][j] == 1:
+                if self.board.nodeList[i][j].phase_node == 1:
                     image = self.load_image("node_protect.png")
                     image_rect = image.get_rect(
-                        bottomright=((j + 1) * self.cell_size - 10, (i + 1) * self.cell_size - 10))
+                        bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
                     screen.blit(image, image_rect)
-                elif self.phase_nodes[i][j] == 2:
+                elif self.board.nodeList[i][j].phase_node == 2:
                     image = self.load_image("node_hacked.png")
                     image_rect = image.get_rect(
-                        bottomright=((j + 1) * self.cell_size - 10, (i + 1) * self.cell_size - 10))
+                        bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
                     screen.blit(image, image_rect)
                     pygame.draw.rect(screen, "green", hacker_bar.move(j * self.cell_size, i * self.cell_size))
-                elif self.phase_nodes[i][j] == 3:
+                elif self.board.nodeList[i][j].phase_node == 3:
                     image = self.load_image("encrypted.png")
                     image_rect = image.get_rect(
-                        bottomright=((j + 1) * self.cell_size - 10, (i + 1) * self.cell_size - 10))
+                        bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
                     screen.blit(image, image_rect)
                     pygame.draw.rect(screen, "green", hacker_bar.move(j * self.cell_size, i * self.cell_size))
                     pygame.draw.rect(screen, "green",
                                      encrypted_bar.move(j * self.cell_size, i * self.cell_size))
 
-    def phase_change(self, phase, x, y):
+    def phase_change(self, node, x, y):
+        phase = node.phase_node
         if phase == 3:
             return 3
         if phase == 1:
-            progress = 0
-            clock = pygame.time.Clock()
-            while progress <= 5:
-                progress += 10 * clock.tick() / 1000
-                progress_hacker_bar = pygame.Rect(10, 10, 20, progress * 10)
-                pygame.draw.rect(screen, "green", progress_hacker_bar.move(y * self.cell_size, x * self.cell_size))
-                pygame.display.flip()
-            phase += 1
-            return phase
+
+            pygame.time.set_timer(PROGRESS_HACK, 1000)
+            return node
         elif phase == 2:
             progress = 0
             clock = pygame.time.Clock()
             while progress <= 10:
-                progress_encrypted_bar = pygame.Rect(90, 10, 20, progress * 5)
+                progress_encrypted_bar = pygame.Rect(88, 12, 20, progress * 5)
                 pygame.draw.rect(screen, "green", progress_encrypted_bar.move(y * self.cell_size, x * self.cell_size))
                 progress += 10 * clock.tick() / 1000
                 pygame.display.flip()
@@ -255,7 +252,7 @@ class The_playing_field:
     def on_click(self, cell_coords):
         if cell_coords is not None:
             i, j = cell_coords
-            self.phase_nodes[i][j] = self.phase_change(self.phase_nodes[i][j], i, j)
+            self.board.nodeList[i][j] = self.phase_change(self.board.nodeList[i][j], i, j)
 
     def get_click(self, mouse_pos):
         x, y = mouse_pos
@@ -265,54 +262,6 @@ class The_playing_field:
             self.on_click(cell_coord)
         else:
             self.on_click(None)
-
-    def initIcons(self):
-        icon_node_pr = pygame.image.save_extended("./res/icons/node_protect.png")
-        self.icons[1] = icon_node_pr
-
-        icon_node_hk = QIcon()
-        icon_node_hk.addPixmap(QPixmap("./res/icons/node_hacked.png"))
-        self.icons[2] = icon_node_hk
-
-        icon_main_node_pr = QIcon()
-        icon_main_node_pr.addPixmap(QPixmap("./res/icons/main_node_protect.png"))
-        self.icons[3] = icon_main_node_pr
-
-        icon_main_node_hk = QIcon()
-        icon_main_node_hk.addPixmap(QPixmap("./res/icons/main_node_hacked.png"))
-        self.icons[4] = icon_main_node_hk
-
-        icon_block = QIcon()
-        icon_block.addPixmap(QPixmap("./res/icons/blocked.png"))
-        self.icons[5] = icon_block
-
-        icon_encrypt = QIcon()
-        icon_encrypt.addPixmap(QPixmap("./res/icons/encrypted.png"))
-        self.icons[6] = icon_encrypt
-
-        icon_kaspersky = QIcon()
-        icon_kaspersky.addPixmap(QPixmap("./res/icons/kaspersky.png"))
-        self.icons[7] = icon_kaspersky
-
-        icon_bitdefender = QIcon()
-        icon_bitdefender.addPixmap(QPixmap("./res/icons/bitdefender.png"))
-        self.icons[8] = icon_bitdefender
-
-        icon_norton = QIcon()
-        icon_norton.addPixmap(QPixmap("./res/icons/norton.png"))
-        self.icons[9] = icon_norton
-
-        icon_mcafee = QIcon()
-        icon_mcafee.addPixmap(QPixmap("./res/icons/mcaffee.png"))
-        self.icons[10] = icon_mcafee
-
-        icon_norton = QIcon()
-        icon_norton.addPixmap(QPixmap("./res/icons/notAccess.png"))
-        self.icons[11] = icon_norton
-
-        icon_norton = QIcon()
-        icon_norton.addPixmap(QPixmap("./res/icons/alert.png"))
-        self.icons[12] = icon_norton
 
     def load_image(self, name):
         image = pygame.image.load(os.path.join("icons", name))
@@ -336,6 +285,9 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             field.get_click(event.pos)
+            field.render(screen)
+        if event.type == PROGRESS_HACK:
+            print("работает")
 
     screen.fill((255, 255, 255))
     field.render(screen)
