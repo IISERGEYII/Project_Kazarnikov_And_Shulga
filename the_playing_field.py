@@ -2,8 +2,6 @@ import pygame
 import os
 import random
 
-PROGRESS_HACK = pygame.USEREVENT + 1
-PROGRESS_ENCRYPT = pygame.USEREVENT + 1
 
 class Node:
 
@@ -33,6 +31,8 @@ class Node:
     #            self.av = AV_Norton(mode_coeff, HP)
     #        elif avType == 4:
     #            self.av = AV_Mcafee(mode_coeff, HP)
+    #            self.av.hp = 0
+
 
     def getAV(self):
         return self.av
@@ -70,7 +70,16 @@ class Node:
     def setHacked(self):
         self.hacked = True
 
-    #       self.av.hp = 0
+    def moveHackProgress(self):
+        self.hackProgress += 10
+        if self.hackProgress == 100:
+            self.setHacked()
+
+    def moveEncProgress(self):
+        self.encryptedProgress += 5
+        if self.encryptedProgress == 100:
+            self.setEncrypted()
+
 
     def setEncrypted(self):
         self.encrypted = True
@@ -114,6 +123,7 @@ class Board:
         startNode.setHacked()
         startNode.hackProgress = 100
         startNode.encryptedProgress = 100
+        startNode.phase_node = 3
         accessibleNodes = self.accessibleNodes(startNode)
         for node in accessibleNodes:
             node.setAccess()
@@ -185,6 +195,14 @@ class The_playing_field:
         self.top = 10
         self.cell_size = 100
         self.all_sprites = pygame.sprite.Group()
+        self.hack_timers_events = {}
+        self.enc_timers_events = {}
+        self.progress_hack_start = pygame.USEREVENT + 1
+        self.progress_hack_current = pygame.USEREVENT + 1
+        self.progress_hack_end = self.progress_hack_current + (params["rows"] * params["cols"])
+        self.progress_enc_start = self.progress_hack_end + 1
+        self.progress_enc_current = self.progress_hack_end + 1
+        self.progress_enc_end = self.progress_enc_current + (params["rows"] * params["cols"])
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -205,15 +223,42 @@ class The_playing_field:
                                  width=1)
                 pygame.draw.rect(screen, "red", hp_bar.move(j * self.cell_size, i * self.cell_size))
                 if self.board.nodeList[i][j].phase_node == 1:
-                    image = self.load_image("node_protect.png")
+                    if self.board.nodeList[i][j].main is True:
+                        image = self.load_image("main_node_protect.png")
+                    else:
+                        image = self.load_image("node_protect.png")
                     image_rect = image.get_rect(
                         bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
                     screen.blit(image, image_rect)
+                elif self.board.nodeList[i][j].phase_node == 1.5:
+                    if self.board.nodeList[i][j].main is True:
+                        image = self.load_image("main_node_protect.png")
+                    else:
+                        image = self.load_image("node_protect.png")
+                    image_rect = image.get_rect(
+                        bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
+                    screen.blit(image, image_rect)
+                    progress_hack_bar = pygame.Rect(12, 12, 20, self.board.nodeList[i][j].hackProgress / 2)
+                    pygame.draw.rect(screen, "green", progress_hack_bar.move(j * self.cell_size, i * self.cell_size))
                 elif self.board.nodeList[i][j].phase_node == 2:
-                    image = self.load_image("node_hacked.png")
+                    if self.board.nodeList[i][j].main is True:
+                        image = self.load_image("main_node_hacked.png")
+                    else:
+                        image = self.load_image("node_hacked.png")
                     image_rect = image.get_rect(
                         bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
                     screen.blit(image, image_rect)
+                    pygame.draw.rect(screen, "green", hacker_bar.move(j * self.cell_size, i * self.cell_size))
+                elif self.board.nodeList[i][j].phase_node == 2.5:
+                    if self.board.nodeList[i][j].main is True:
+                        image = self.load_image("main_node_hacked.png")
+                    else:
+                        image = self.load_image("node_hacked.png")
+                    image_rect = image.get_rect(
+                        bottomright=((j + 1) * self.cell_size - 15, (i + 1) * self.cell_size - 20))
+                    screen.blit(image, image_rect)
+                    progress_enc_bar = pygame.Rect(88, 12, 20, self.board.nodeList[i][j].encryptedProgress / 2)
+                    pygame.draw.rect(screen, "green", progress_enc_bar.move(j * self.cell_size, i * self.cell_size))
                     pygame.draw.rect(screen, "green", hacker_bar.move(j * self.cell_size, i * self.cell_size))
                 elif self.board.nodeList[i][j].phase_node == 3:
                     image = self.load_image("encrypted.png")
@@ -223,25 +268,21 @@ class The_playing_field:
                     pygame.draw.rect(screen, "green", hacker_bar.move(j * self.cell_size, i * self.cell_size))
                     pygame.draw.rect(screen, "green",
                                      encrypted_bar.move(j * self.cell_size, i * self.cell_size))
+                elif self.board.nodeList[i][j].phase_node == 4:
+                    pass
 
-    def phase_change(self, node, x, y):
+    def phase_change(self, node):
         phase = node.phase_node
-        if phase == 3:
-            return 3
         if phase == 1:
-
-            pygame.time.set_timer(PROGRESS_HACK, 1000)
-            return node
+            pygame.time.set_timer(self.progress_hack_current, 100)
+            self.hack_timers_events[self.progress_hack_current] = node
+            self.progress_hack_current += 1
+            node.phase_node = 1.5
         elif phase == 2:
-            progress = 0
-            clock = pygame.time.Clock()
-            while progress <= 10:
-                progress_encrypted_bar = pygame.Rect(88, 12, 20, progress * 5)
-                pygame.draw.rect(screen, "green", progress_encrypted_bar.move(y * self.cell_size, x * self.cell_size))
-                progress += 10 * clock.tick() / 1000
-                pygame.display.flip()
-            phase += 1
-            return phase
+            pygame.time.set_timer(self.progress_enc_current, 100)
+            self.enc_timers_events[self.progress_enc_current] = node
+            self.progress_enc_current += 1
+            node.phase_node = 2.5
 
     def get_cell(self, mouse_pos):
         x, y = mouse_pos
@@ -252,7 +293,7 @@ class The_playing_field:
     def on_click(self, cell_coords):
         if cell_coords is not None:
             i, j = cell_coords
-            self.board.nodeList[i][j] = self.phase_change(self.board.nodeList[i][j], i, j)
+            self.phase_change(self.board.nodeList[i][j])
 
     def get_click(self, mouse_pos):
         x, y = mouse_pos
@@ -286,8 +327,19 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             field.get_click(event.pos)
             field.render(screen)
-        if event.type == PROGRESS_HACK:
-            print("работает")
+        if event.type in range(field.progress_hack_start, field.progress_hack_end):
+            node = field.hack_timers_events.get(event.type)
+            node.moveHackProgress()
+            if node.hacked:
+                node.phase_node = 2
+                pygame.time.set_timer(event.type, 0)
+        if event.type in range(field.progress_enc_start, field.progress_enc_end):
+            node = field.enc_timers_events.get(event.type)
+            node.moveEncProgress()
+            if node.encrypted:
+                node.phase_node = 3
+                pygame.time.set_timer(event.type, 0)
+
 
     screen.fill((255, 255, 255))
     field.render(screen)
