@@ -238,8 +238,6 @@ class The_playing_field:
 
 
 clock = pygame.time.Clock()
-init_param = {"rows": 9, "cols": 10, "mode_coeff": 0.5, "HP": 0}
-field = The_playing_field(10, 9, init_param)
 screen = pygame.display.set_mode((1100, 1000))
 running = True
 while running:
