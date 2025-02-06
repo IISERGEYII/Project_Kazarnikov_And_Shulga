@@ -27,6 +27,8 @@ class The_playing_field:
         self.alarm_time_move_event = self.event_end_game + 1
         self.alarm_time_progres = 0
         self.alarm_time = False
+        self.end_game_phrase = ""
+        self.count = 0
 
     def set_view(self, left, top, cell_size):
         self.left = left
@@ -174,11 +176,13 @@ class The_playing_field:
                 self.return_phase_node(node)
             if self.board.virus.getHP() <= 0:
                 pygame.time.set_timer(self.event_end_game, 10)
+                self.end_game_phrase = "П  О  Р  А  Ж  Е  Н  И  Е  :  в  и  р  у  с   у  н  и  ч  т  о  ж  е  н"
 
     def move_progres_alarm_timer(self):
         self.alarm_time_progres += 1
         if self.alarm_time_progres >= 60:
             pygame.time.set_timer(self.event_end_game, 10)
+            self.end_game_phrase = "П  О  Р  А  Ж  Е  Н  И  Е   :   в  а  с   о  т  к  л  ю  ч  и  л  и   о  т   с  и  с  т  е  м ы"
 
     def return_phase_node(self, node):
         if node.isEncrypted():
@@ -212,26 +216,40 @@ class The_playing_field:
         image = pygame.image.load(os.path.join("icons", name))
         return image
 
-    def end_game_screen(self):
-        sc = pygame.display.set_mode((1100, 1000))
-        sc.fill(255, 255, 255)
-        font = pygame.font.Font(None, 30)
-        text_coord = 50
-        for line in intro_text:
-            string_rendered = font.render(line, 1, pygame.Color('black'))
-            intro_rect = string_rendered.get_rect()
-            text_coord += 10
-            intro_rect.top = text_coord
-            intro_rect.x = 10
-            text_coord += intro_rect.height
-            screen.blit(string_rendered, intro_rect)
+    def render_screen(self, sc):
+        main_font = pygame.font.Font(None, 24)
+        main_text = main_font.render(self.end_game_phrase, True, (0, 0, 0))
+        image_1 = pygame.transform.scale(self.load_image("encrypted.png"), (100, 100))
+        image_rect_1 = image_1.get_rect(
+            bottomright=(100, 200))
+        image_2 = pygame.transform.scale(self.load_image("alert.png"), (100, 100))
+        image_rect_2 = image_2.get_rect(
+            bottomright=(400, 200))
+        image_3 = pygame.transform.scale(self.load_image("main_node_hacked.png"), (100, 100))
+        image_rect_3 = image_3.get_rect(
+            bottomright=(700, 200))
+        sc.blit(image_1, image_rect_1)
+        sc.blit(image_2, image_rect_2)
+        sc.blit(image_3, image_rect_3)
+        count_font = pygame.font.Font(None, 24)
+        count_text = count_font.render(f"Суммарно очков: {self.get_count()}", True, (0, 0, 0))
+        sc.blit(count_text, (10, 350))
+        sc.blit(main_text, (10, 10))
 
+    def get_count(self):
+        return self.count
+
+
+    def end_game_screen(self):
+        sc = pygame.display.set_mode((800, 400))
+        sc.fill((255, 255, 255))
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     terminate()
                 elif event.type == pygame.KEYUP:
                     return
+            self.render_screen(sc)
             pygame.display.flip()
             clock.tick(FPS)
 
@@ -253,6 +271,7 @@ while running:
             node = field.hack_timers_events.get(event.type)
             node.moveHackProgress()
             if node.hacked:
+                field.count += 50
                 node.phase_node = 2
                 pygame.time.set_timer(event.type, 0)
                 accessibleNodes = field.board.accessibleNodes(node)
@@ -277,7 +296,10 @@ while running:
                 node.phase_node = 3
                 pygame.time.set_timer(event.type, 0)
                 if node.isMain():
+                    field.count += 5000
                     pygame.time.set_timer(field.event_end_game, 10)
+                    field.end_game_phrase = "П  О  Б  Е  Д  А  :  г  л  а  в  н  а  я   н  о  д  а   в  з  л  о  м  а  н  а"
+                field.count += 500
                 if field.alarm_time is False and node.start_alarm is True:
                     field.alarm_time = True
                     pygame.time.set_timer(field.alarm_time_move_event, 1000)

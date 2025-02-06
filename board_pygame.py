@@ -127,7 +127,7 @@ class AV_Mcafee(AntiVirus):
 class Virus:
     def __init__(self):
         self.script = Script()
-        self.hp = 1500
+        self.hp = 150
         self.ap = 30 * self.script.DC
         self.shield = 0
         self.activeScripts = {
@@ -282,7 +282,7 @@ class Node:
         else:
             if not self.av.isDestroyed():
                 avActivateChance = random.random()
-                if avActivateChance >= 0.93:
+                if avActivateChance >= 0.98:
                     self.av.setActive()
 
     def moveEncProgress(self):
