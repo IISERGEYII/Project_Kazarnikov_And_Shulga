@@ -1,3 +1,206 @@
+import random
+
+class Script:
+    def __init__(self):
+        self.usages = 1
+        self.AP = 0
+        self.DC = 1
+        self.shield = 0
+        self.RP = 0
+
+    def setUsage(self, virus):
+        if self.usages - 1 > 0:
+            self.usages -= 1
+        else:
+            virus.activescript[self.__class__] = None
+
+    def addActiveScript(self, virus):
+        virus.activeScripts[self.__class__] = self
+
+
+class WormScript(Script):
+    def __init__(self):
+        super().__init__()
+        self.shield = 40
+
+
+class TrojanScript(Script):
+    def __init__(self):
+        super().__init__()
+        self.usages = 3
+        self.RP = 20
+
+
+class LogicBombScript(Script):
+    def __init__(self):
+        super().__init__()
+        self.DC = 2
+
+
+class ExploitScript(Script):
+    def __init__(self):
+        super().__init__()
+        self.usages = 3
+        self.AP = 15
+
+
+class AntiVirus:
+
+    def __init__(self, HP, AP):
+        self.HP = HP
+        self.AP = AP
+        self.max_HP = HP
+        self.radius = 1
+        self.effect = 0
+        self.repair = 0
+        self.active = False
+        self.destroyed = False
+
+    def isActive(self):
+        return self.active
+
+    def isDestroyed(self):
+        return self.destroyed
+
+    def setActive(self):
+        if not self.isDestroyed():
+            self.active = True
+
+    def getHP(self):
+        return self.HP
+
+    def attack(self, AP):
+        self.HP -= AP
+        if self.HP <= 0:
+            self.HP = 0
+            self.destroyed = True
+            self.active = False
+
+    def counterattack(self, virus):
+        AP = (self.AP - virus.shield)
+
+        if virus.shield > 0:
+            if virus.shield - self.AP > 0:
+                virus.shield -= self.AP
+            else:
+                virus.shield = 0
+
+        virus.setHP(virus.getHP() - AP)
+
+
+class AV_Kaspersky(AntiVirus):
+    def __init__(self, mode_coeff, HP):
+        self.basicHP = int(90 + HP)
+        self.basicAP = 20
+        super().__init__(self.basicHP, self.basicAP)
+        self.type = 1
+        self.radius = 2 * mode_coeff
+
+
+class AV_Bitdefender(AntiVirus):
+    def __init__(self, mode_coeff, HP):
+        self.basicHP = int(60 + HP)
+        self.basicAP = 40
+        AP = int(self.basicAP * mode_coeff)
+        super().__init__(self.basicHP, AP)
+        self.type = 2
+
+
+class AV_Norton(AntiVirus):
+    def __init__(self, mode_coeff, HP):
+        self.basicHP = int(80 + HP)
+        self.basicAP = 10
+        super().__init__(self.basicHP, self.basicAP)
+        self.type = 3
+        self.repair = int(5 * mode_coeff)
+
+
+class AV_Mcafee(AntiVirus):
+    def __init__(self, mode_coeff, HP):
+        self.basicHP = int(40 + HP)
+        self.basicAP = 15
+        super().__init__(self.basicHP, self.basicAP)
+        self.type = 4
+        self.effect = int(5 * mode_coeff)
+
+
+class Virus:
+    def __init__(self):
+        self.script = Script()
+        self.hp = 1500
+        self.ap = 30 * self.script.DC
+        self.shield = 0
+        self.activeScripts = {
+            WormScript: None,
+            TrojanScript: None,
+            LogicBombScript: None,
+            ExploitScript: None
+        }
+
+    def getHP(self):
+        return self.hp
+
+    def setHP(self, hp):
+        self.hp = hp
+
+    def getAP(self):
+        return self.ap
+
+    def setAP(self, ap):
+        self.AP = ap
+
+    def setActiveWormScript(self):
+        if self.activeScripts.get(WormScript) is None:
+            self.activeScripts[WormScript] = 1
+        else:
+            self.activeScripts[WormScript] += 1
+
+    def setActiveTrojanScript(self):
+        if self.activeScripts.get(TrojanScript) is None:
+            self.activeScripts[TrojanScript] = 1
+        else:
+            self.activeScripts[TrojanScript] += 1
+
+    def setActiveLogicBombScript(self):
+        if self.activeScripts.get(LogicBombScript) is None:
+            self.activeScripts[LogicBombScript] = 1
+        else:
+            self.activeScripts[LogicBombScript] += 1
+
+    def setActiveExploitScript(self):
+        if self.activeScripts.get(ExploitScript) is None:
+            self.activeScripts[ExploitScript] = 1
+        else:
+            self.activeScripts[ExploitScript] += 1
+
+    def attackNode(self, node, board):
+        attackBonus = 0
+        for script in self.activeScripts.values():
+            if script is None:
+                continue
+            attackBonus += (node.av.getHP() // int(script.DC)) + script.AP
+            self.hp += script.RP
+            self.shield = script.shield
+            script.setUsage(self)
+        av = node.getAV()
+        av.attack(self.ap + attackBonus)
+        if av.isDestroyed():
+            self.ap += av.effect
+            for blockedNode in node.blockedList:
+                blockedNode.setBlock(False, av)
+            node.blockedList.clear()
+            if av in board.activeAV:
+                board.activeAV.remove(av)
+            if av in board.activeRepairs:
+                board.activeRepairs.remove(av)
+        else:
+            av.counterattack(self)
+            for rep in board.activeRepairs:
+                for av in board.activeAV:
+                    if av.getHP() < av.basicHP * 2:
+                        av.HP = min(rep.repair + av.HP, av.basicHP * 2)
+
+
 class Node:
 
     def __init__(self, row, col, mode_coeff, HP):
@@ -11,6 +214,8 @@ class Node:
         self.isBlockedByList = []
         self.blockedList = []
         self.main = False
+        self.start_alarm = False
+        self.phase_node = 1
         self.__initAV(mode_coeff, HP)
 
     def __initAV(self, mode_coeff, HP):
@@ -30,6 +235,12 @@ class Node:
 
     def getTypeAV(self):
         return self.av.type
+
+    def getPhase(self):
+        return  self.phase_node
+
+    def setPhase(self, new_phase):
+        self.phase_node = new_phase
 
     def isHacked(self):
         return self.hacked
@@ -60,7 +271,28 @@ class Node:
 
     def setHacked(self):
         self.hacked = True
-        self.av.hp = 0
+
+    def moveHackProgress(self):
+        if self.isMain():
+            self.hackProgress += 5
+        else:
+            self.hackProgress += 10
+        if self.hackProgress == 100:
+            self.setHacked()
+        else:
+            if not self.av.isDestroyed():
+                avActivateChance = random.random()
+                if avActivateChance >= 0.93:
+                    self.av.setActive()
+
+    def moveEncProgress(self):
+        self.encryptedProgress += 5
+        if self.encryptedProgress == 100:
+            self.setEncrypted()
+            avActivateChance = random.random()
+            if avActivateChance >= 0.8:
+                self.start_alarm = True
+
 
     def setEncrypted(self):
         self.encrypted = True
@@ -78,6 +310,7 @@ class Board:
         self.__initNodes()
         self.virus = Virus()
         self.alarmTimerActive = False
+        self.list_picture_number = []
         self.activeAV = []
         self.activeRepairs = []
 
@@ -103,6 +336,7 @@ class Board:
         startNode.setHacked()
         startNode.hackProgress = 100
         startNode.encryptedProgress = 100
+        startNode.phase_node = 3
         accessibleNodes = self.accessibleNodes(startNode)
         for node in accessibleNodes:
             node.setAccess()
@@ -147,8 +381,6 @@ class Board:
     def attackNode(self, attackNode):
         self.virus.attackNode(attackNode, self)
 
-    def endGame(self):
-        pass
 
     def setAlarmTimerActive(self):
         self.alarmTimerActive = True
