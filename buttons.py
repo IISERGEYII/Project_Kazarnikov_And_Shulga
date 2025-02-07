@@ -1,6 +1,8 @@
 import pygame
 
 
+
+
 class Button:
     def __init__(self, ev, name, x, y, width, height, text, image_path, hover_im_path=None, size=20):
         self.x = x
@@ -20,6 +22,10 @@ class Button:
         self.doubledmg = 0
         self.momentdmg = 0
         self.init_param = 0
+        self.hack_spd = 1
+        self.notice_code = 1
+        self.health_virus = 1
+        self.dmg_virus = 1
 
         if hover_im_path:
             self.hover_image = pygame.image.load(hover_im_path)
@@ -66,7 +72,19 @@ class Button:
                 self.init_param = {'rows': 9, 'cols': 10, 'mode_coeff': 1, 'HP': 0}
             elif nam == 'hardgame_button':
                 self.init_param = {'rows': 9, 'cols': 10, 'mode_coeff': 1.5, 'HP': 0}
-
+        elif num == 3:
+            if nam == 'hack_spd_button' and self.u >= 1000 and self.hack_spd <= 5:
+                self.hack_spd += 1
+                self.u -= 1000
+            elif nam == 'noticecode_button' and self.u >= 1000 and self.notice_code <= 5:
+                self.notice_code += 1
+                self.u -= 1000
+            elif nam == 'virus_health_button' and self.u >= 1000 and self.health_virus <= 5:
+                self.health_virus += 1
+                self.u -= 1000
+            elif nam == 'virus_dmg_boost_button' and self.u >= 1000 and self.dmg_virus <= 5:
+                self.dmg_virus += 1
+                self.u -= 1000
 
 
 class Label:
