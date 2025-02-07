@@ -203,7 +203,7 @@ class Virus:
 
 class Node:
 
-    def __init__(self, row, col, mode_coeff, HP):
+    def __init__(self, row, col, mode_coeff, HP, hack_boost, enc_boost):
         self.row = row
         self.col = col
         self.hacked = False
@@ -216,6 +216,8 @@ class Node:
         self.main = False
         self.start_alarm = False
         self.phase_node = 1
+        self.hack_boost = hack_boost
+        self.enc_boost = enc_boost
         self.__initAV(mode_coeff, HP)
 
     def __initAV(self, mode_coeff, HP):
@@ -274,10 +276,10 @@ class Node:
 
     def moveHackProgress(self):
         if self.isMain():
-            self.hackProgress += 5
+            self.hackProgress += 2 + self.hack_boost
         else:
-            self.hackProgress += 10
-        if self.hackProgress == 100:
+            self.hackProgress += 7 + self.hack_boost
+        if self.hackProgress >= 100:
             self.setHacked()
         else:
             if not self.av.isDestroyed():
@@ -286,8 +288,8 @@ class Node:
                     self.av.setActive()
 
     def moveEncProgress(self):
-        self.encryptedProgress += 5
-        if self.encryptedProgress == 100:
+        self.encryptedProgress += 2 + self.enc_boost
+        if self.encryptedProgress >= 100:
             self.setEncrypted()
             avActivateChance = random.random()
             if avActivateChance >= 0.8:
@@ -302,11 +304,13 @@ class Node:
 
 
 class Board:
-    def __init__(self, params):
+    def __init__(self, params, hack_boost, enc_boost):
         self.rows = params.get("rows")
         self.cols = params.get("cols")
         self.mode_coeff = params.get("mode_coeff")
         self.HP = params.get("HP")
+        self.hack_boost = hack_boost
+        self.enc_boost = enc_boost
         self.__initNodes()
         self.virus = Virus()
         self.alarmTimerActive = False
@@ -316,7 +320,8 @@ class Board:
 
     def __initNodes(self):
         random.seed()
-        self.nodeList = [[Node(i, j, self.mode_coeff, self.HP) for j in range(self.cols)] for i in range(self.rows)]
+        self.nodeList = [[Node(i, j, self.mode_coeff, self.HP, self.hack_boost, self.enc_boost)
+                          for j in range(self.cols)] for i in range(self.rows)]
 
         startCol = 0
         selectSet = list(range(self.rows))
