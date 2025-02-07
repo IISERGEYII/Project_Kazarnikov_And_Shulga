@@ -263,7 +263,8 @@ def play_game(params):
     screen = pygame.display.set_mode((1100, 1000))
     running = True
     field = The_playing_field(10, 9, params)
-    coun = field.get_count()
+    if hack_spd_button.hack_spd > 1:
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -326,47 +327,39 @@ def play_game(params):
 clock = pygame.time.Clock()
 
 coun = 0
+protfield_button = Button(100, 500, 280, 30, 'Купить защитное поле за 500 очков', 'img.png',
+                          'img_1.png')
+reconstr_button = Button(100, 540, 280, 30, 'Купить реконструкцию за 600 очков', 'img.png',
+                         'img_1.png')
+doubledmg_button = Button(100, 580, 280, 30, 'Купить двойной урон за 1200 очков', 'img.png',
+                          'img_1.png')
+momentdmg_button = Button(100, 620, 280, 30, 'Купить моментальный урон за 1200 очков',
+                          'img.png',
+                          'img_1.png')
+lightgame_button = Button(100, 220, 280, 100, 'Режим для новичков', 'img.png', 'img_1.png')
+mediumgame_button = Button(500, 220, 280, 100, 'Режим для опытных', 'img.png', 'img_1.png')
+hardgame_button = Button(900, 220, 280, 100, 'Лютый хардкор', 'img.png', 'img_1.png')
+hack_spd_button = Button(700, 500, 280, 30, 'Купить увеличение скорости взлома', 'img.png',
+                         'img_1.png')
+noticecode_button = Button(700, 540, 280, 30, 'Купить незаметность шифровки', 'img.png',
+                           'img_1.png')
+virus_health_button = Button(700, 580, 280, 30, 'Купить увеличение здоровья вируса',
+                             'img.png',
+                             'img_1.png')
+virus_dmg_boost_button = Button(700, 620, 280, 30, 'Купить увеличение урона вируса',
+                                'img.png',
+                                'img_1.png')
 
 
 def play_menu():
+    global coun
     pygame.init()
     pygame.font.init()
     width, height = 1500, 700
     running = True
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption('df')
-    d = []
-    protfield_button = Button(1, 'protfield_button', 100, 500, 280, 30, 'Купить защитное поле за 500 очков', 'img.png',
-                              'img_1.png')
-    d.append(protfield_button)
-    reconstr_button = Button(1, 'reconstr_button', 100, 540, 280, 30, 'Купить реконструкцию за 600 очков', 'img.png',
-                             'img_1.png')
-    d.append(reconstr_button)
-    doubledmg_button = Button(1, 'doubledmg_button', 100, 580, 280, 30, 'Купить двойной урон за 1200 очков', 'img.png',
-                              'img_1.png')
-    d.append(doubledmg_button)
-    momentdmg_button = Button(1, 'momentdmg_button', 100, 620, 280, 30, 'Купить моментальный урон за 1200 очков',
-                              'img.png',
-                              'img_1.png')
-    d.append(momentdmg_button)
-    lightgame_button = Button(2, 'lightgame_button', 100, 220, 280, 100, 'Режим для новичков', 'img.png', 'img_1.png')
-    d.append(lightgame_button)
-    mediumgame_button = Button(2, 'mediumgame_button', 500, 220, 280, 100, 'Режим для опытных', 'img.png', 'img_1.png')
-    d.append(mediumgame_button)
-    hardgame_button = Button(2, 'hardgame_button', 900, 220, 280, 100, 'Лютый хардкор', 'img.png', 'img_1.png')
-    d.append(hardgame_button)
-    hack_spd_button = Button(3, 'hack_spd_button', 700, 500, 280, 30, 'Купить увеличение скорости взлома', 'img.png',
-                             'img_1.png')
-    d.append(hack_spd_button)
-    noticecode_button = Button(3, 'noticecode_button', 700, 540, 280, 30, 'Купить незаметность шифровки', 'img.png',
-                               'img_1.png')
-    d.append(noticecode_button)
-    virus_health_button = Button(3, 'hack_spd_button', 700, 580, 280, 30, 'Купить увеличение здоровья вируса',
-                                 'img.png',
-                                 'img_1.png')
-    virus_dmg_boost_button = Button(3, 'hack_spd_button', 700, 620, 280, 30, 'Купить увеличение урона вируса',
-                                    'img.png',
-                                    'img_1.png')
+    pygame.display.set_caption('pygame game')
+
     la_equip = Label(100, 440)
     la_protfield = Label(400, 500)
     la_reconstr = Label(400, 540)
@@ -399,41 +392,41 @@ def play_menu():
                 running = False
             if event.type == pygame.USEREVENT:
                 if event.button == lightgame_button:
-                    lightgame_button.button_event(lightgame_button.ev, lightgame_button.namer)
                     play_game({'rows': 9, 'cols': 10, 'mode_coeff': 0.5, 'HP': 0})
                 elif event.button == hardgame_button:
-                    hardgame_button.button_event(hardgame_button.ev, hardgame_button.namer)
                     play_game({'rows': 9, 'cols': 10, 'mode_coeff': 1.5, 'HP': 0})
                 elif event.button == mediumgame_button:
-                    mediumgame_button.button_event(mediumgame_button.ev, mediumgame_button.namer)
                     play_game({'rows': 9, 'cols': 10, 'mode_coeff': 1.0, 'HP': 0})
-                elif event.button == protfield_button:
-                    protfield_button.button_event(protfield_button.ev, protfield_button.namer)
-
-                elif event.button == reconstr_button:
-                    reconstr_button.button_event(reconstr_button.ev, reconstr_button.namer)
-                elif event.button == doubledmg_button:
-                    doubledmg_button.button_event(doubledmg_button.ev, doubledmg_button.namer)
-                elif event.button == momentdmg_button:
-                    lightgame_button.button_event(lightgame_button.ev, lightgame_button.namer)
-                elif event.button == hack_spd_button:
-                    hack_spd_button.button_event(hack_spd_button.ev, hack_spd_button.namer)
-                elif event.button == noticecode_button:
-                    noticecode_button.button_event(noticecode_button.ev, noticecode_button.namer)
-                elif event.button == virus_health_button:
-                    virus_health_button.button_event(virus_health_button.ev, virus_health_button.namer)
-                elif event.button == virus_dmg_boost_button:
-                    virus_dmg_boost_button.button_event(virus_dmg_boost_button.ev, virus_dmg_boost_button.namer)
-        la_hack_spd.print_text_pygame(screen, f'{hack_spd_button.hack_spd}')
+                elif event.button == protfield_button:  # не успели реализовать
+                    pass
+                elif event.button == reconstr_button:  # не успели реализовать
+                    pass
+                elif event.button == doubledmg_button:  # не успели реализовать
+                    pass
+                elif event.button == momentdmg_button:  # не успели реализовать
+                    pass
+                elif event.button == hack_spd_button and coun >= 1000:
+                    hack_spd_button.hack_spd += 0.5
+                    coun -= 500
+                elif event.button == noticecode_button and coun >= 1000:
+                    noticecode_button.notice_code += 1
+                    coun -= 1000
+                elif event.button == virus_health_button and coun >= 1000:
+                    virus_health_button.health_virus += 1
+                    coun -= 1000
+                elif event.button == virus_dmg_boost_button and coun >= 1000:
+                    virus_dmg_boost_button.dmg_virus += 1
+                    coun -= 1000
+        la_hack_spd.print_text_pygame(screen, f'{int(hack_spd_button.hack_spd)}')
         la_notice_code.print_text_pygame(screen, f'{noticecode_button.notice_code}')
         la_health_virus.print_text_pygame(screen, f'{virus_health_button.health_virus}')
         la_dmg_virus.print_text_pygame(screen, f'{virus_dmg_boost_button.dmg_virus}')
         la_improve_level.print_text_pygame(screen, "уровень улучшений(макс.5)")
         la_improvement.print_text_pygame(screen, f'улучшения')
         if coun == 0:
-            la_points.print_text_pygame(screen, f'{0}')
+            la_points.print_text_pygame(screen, f'Очки: {0}')
         else:
-            la_points.print_text_pygame(screen, f'{coun} очков')
+            la_points.print_text_pygame(screen, f'Очки: {coun}')
         la_protfield.print_text_pygame(screen, f'{protfield_button.protfield}')
         la_reconstr.print_text_pygame(screen, f'{reconstr_button.reconstr}')
         la_doubledmg.print_text_pygame(screen, f'{doubledmg_button.doubledmg}')

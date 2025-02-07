@@ -4,14 +4,12 @@ import pygame
 
 
 class Button:
-    def __init__(self, ev, name, x, y, width, height, text, image_path, hover_im_path=None, size=20):
+    def __init__(self, x, y, width, height, text, image_path, hover_im_path=None, size=20):
         self.x = x
         self.u = 0
-        self.namer = name
         self.y = y
         self.size = size
         self.width = width
-        self.ev = ev
         self.height = height
         self.text = text
         self.image = pygame.image.load(image_path)
@@ -51,40 +49,7 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered:
             pygame.event.post(pygame.event.Event(pygame.USEREVENT, button=self))
 
-    def button_event(self, num: int, nam: str):
-        if num == 1:
-            if nam == 'momentdmg_button' and self.u >= 1200:
-                self.momentdmg += 1
-                self.u -= 1200
-            elif nam == 'protfield_button' and self.u >= 500:
-                self.protfield += 1
-                self.u -= 500
-            elif nam == 'reconstr_button' and self.u >= 600:
-                self.reconstr += 1
-                self.u -= 500
-            elif nam == 'doubledmg_button' and self.u >= 1200:
-                self.doubledmg += 1
-                self.u -= 1200
-        elif num == 2:
-            if nam == 'lightgame_button':
-                self.init_param = {'rows': 9, 'cols': 10, 'mode_coeff': 0.5, 'HP': 0}
-            elif nam == 'mediumgame_button':
-                self.init_param = {'rows': 9, 'cols': 10, 'mode_coeff': 1, 'HP': 0}
-            elif nam == 'hardgame_button':
-                self.init_param = {'rows': 9, 'cols': 10, 'mode_coeff': 1.5, 'HP': 0}
-        elif num == 3:
-            if nam == 'hack_spd_button' and self.u >= 1000 and self.hack_spd <= 5:
-                self.hack_spd += 1
-                self.u -= 1000
-            elif nam == 'noticecode_button' and self.u >= 1000 and self.notice_code <= 5:
-                self.notice_code += 1
-                self.u -= 1000
-            elif nam == 'virus_health_button' and self.u >= 1000 and self.health_virus <= 5:
-                self.health_virus += 1
-                self.u -= 1000
-            elif nam == 'virus_dmg_boost_button' and self.u >= 1000 and self.dmg_virus <= 5:
-                self.dmg_virus += 1
-                self.u -= 1000
+
 
 
 class Label:
