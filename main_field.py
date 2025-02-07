@@ -263,8 +263,10 @@ def play_game(params):
     screen = pygame.display.set_mode((1100, 1000))
     running = True
     field = The_playing_field(10, 9, params)
-    if hack_spd_button.hack_spd > 1:
-
+    if virus_health_button.health_virus > 1:
+        field.board.virus.hp *= virus_health_button.health_virus
+    elif virus_dmg_boost_button.dmg_virus > 1:
+        field.board.virus.ap *= virus_dmg_boost_button.dmg_virus
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
