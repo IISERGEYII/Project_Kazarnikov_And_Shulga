@@ -411,16 +411,16 @@ def play_menu():
                     pass
                 elif event.button == momentdmg_button:  # не успели реализовать
                     pass
-                elif event.button == hack_spd_button and coun >= 1000:
-                    hack_spd_button.hack_spd += 0.5
+                elif event.button == hack_spd_button and coun >= 1000 and hack_spd_button.hack_spd <= 5:
+                    hack_spd_button.hack_spd += 1
                     coun -= 500
-                elif event.button == noticecode_button and coun >= 1000:
+                elif event.button == noticecode_button and coun >= 1000 and noticecode_button.notice_code <= 5:
                     noticecode_button.notice_code += 1
                     coun -= 1000
-                elif event.button == virus_health_button and coun >= 1000:
+                elif event.button == virus_health_button and coun >= 1000 and virus_health_button.health_virus <= 5:
                     virus_health_button.health_virus += 1
                     coun -= 1000
-                elif event.button == virus_dmg_boost_button and coun >= 1000:
+                elif event.button == virus_dmg_boost_button and coun >= 1000 and virus_dmg_boost_button.dmg_virus <= 5:
                     virus_dmg_boost_button.dmg_virus += 1
                     coun -= 1000
         la_hack_spd.print_text_pygame(screen, f'{int(hack_spd_button.hack_spd)}')
