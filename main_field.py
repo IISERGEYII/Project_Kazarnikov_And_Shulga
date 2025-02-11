@@ -8,11 +8,11 @@ import pygame
 from buttons import Button, Label
 
 
-class The_playing_field:
+class The_playing_field:    
     def __init__(self, width, height, params):
-        self.width = width
+        self.width = width        
         self.height = height
-        self.hack_boost = hack_spd_button.hack_spd
+        self.hack_boost = hack_spd_button.hack_spd        
         self.enc_boost = noticecode_button.notice_code
         self.board = Board(params, self.hack_boost, self.enc_boost)
 
